@@ -15,7 +15,7 @@ export default class NoteComponent extends Component {
 
 const styles = StyleSheet.create({
     noteWrapper: {
-      backgroundColor: 'lightgrey',
+      backgroundColor: '#f0f0f0',
       height: '100%',
       padding: 10,
     }

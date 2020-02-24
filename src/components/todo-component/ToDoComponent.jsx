@@ -5,7 +5,9 @@ import { CheckBox, Icon } from 'native-base';
 import moment from 'moment';
 import uuidv1 from 'uuid/v1';
 
-export default class ToDoComponent extends Component {
+import { getStorageItem, setStorageItem } from '../../helpers/storageHelper';
+
+export default class TodoComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -13,7 +15,8 @@ export default class ToDoComponent extends Component {
             modalSelectVisible: false,
             todoText: '',
             storageTodo: [],
-            selectTodo: {}
+            selectTodo: {},
+            isStorageTodo: null
         };
         autoBind(this);
     }
@@ -22,11 +25,22 @@ export default class ToDoComponent extends Component {
         this.getTodo();
     }
 
-    getTodo = async () => {
-        let dataTodo = await AsyncStorage.getItem('Todos');
-        let dataTodoParsed = JSON.parse(dataTodo);
-        this.setState({
-            storageTodo: dataTodoParsed
+    getTodo() {
+        getStorageItem('Todos').then(dataTodo => {
+            this.setState({
+                storageTodo: dataTodo
+            }, () => {
+                if(this.state.storageTodo.length > 0) {
+                    this.setState({
+                        isStorageTodo: true
+                    })
+                } else {
+                    this.setState({
+                        isStorageTodo: false
+                    })
+                }
+               
+            })
         })
     }
 
@@ -40,7 +54,6 @@ export default class ToDoComponent extends Component {
         this.setState({
             todoText: text
         });
-        
     }
 
     createTodo() {
@@ -50,7 +63,7 @@ export default class ToDoComponent extends Component {
         });
     }
 
-    saveTodoToStore = async () => {
+    saveTodoToStore() {
         let todoArray = [];
         let todoObject = {};
         todoObject.text = this.state.todoText;
@@ -61,48 +74,49 @@ export default class ToDoComponent extends Component {
         this.setState({
             todoText: ''
         })
-        let dataTodo = await AsyncStorage.getItem('Todos');
-        if (dataTodo) {
-            let dataTodoParsed = JSON.parse(dataTodo);
-            dataTodoParsed.unshift(todoObject)
-            let todoArrayString = JSON.stringify(dataTodoParsed);
-            await AsyncStorage.setItem('Todos', todoArrayString);
-            this.getTodo();
-        } else {
-            todoArray.push(todoObject);
-            let todoArrayString = JSON.stringify(todoArray);
-            await AsyncStorage.setItem('Todos', todoArrayString);
-            this.getTodo();
-        }
+
+        getStorageItem('Todos').then(dataTodo => {
+            if (dataTodo) {
+                dataTodo.unshift(todoObject);
+                setStorageItem('Todos', dataTodo).then(() => {
+                    this.getTodo();
+                })
+            } else {
+                todoArray.push(todoObject);
+                setStorageItem('Todos', todoArray).then(() => {
+                    this.getTodo();
+                })
+            }
+        })
     }
 
-    removeTodo = async (id) => {
-        let dataTodo = await AsyncStorage.getItem('Todos');
-        let dataTodoParsed = JSON.parse(dataTodo);
-        const resultTodos = dataTodoParsed.filter(item => item.id != id);
-        let todoArrayString = JSON.stringify(resultTodos);
-        await AsyncStorage.setItem('Todos', todoArrayString);
-        this.getTodo();
+    removeTodo(id) {
+        getStorageItem('Todos').then(data => {
+            const resultTodos = data.filter(item => item.id != id);
+            setStorageItem('Todos', resultTodos).then(() => {
+                this.getTodo();
+            })
+        })
     }
 
-    resolveTodo = async (id) => {
-        let dataTodo = await AsyncStorage.getItem('Todos');
-        let dataTodoParsed = JSON.parse(dataTodo);
-        let index = dataTodoParsed.findIndex((item) => item.id == id)
-        dataTodoParsed[index].isDone = !dataTodoParsed[index].isDone;
-        let todoArrayString = JSON.stringify(dataTodoParsed);
-        await AsyncStorage.setItem('Todos', todoArrayString);
-        this.getTodo();
+    resolveTodo(id) {
+        getStorageItem('Todos').then(data => {
+            let index = data.findIndex((item) => item.id == id)
+            data[index].isDone = !data[index].isDone;
+            setStorageItem('Todos', data).then(() => {
+                this.getTodo();
+            })
+        })
     }
 
-    selectTodo = async (id) => {
-        let dataTodo = await AsyncStorage.getItem('Todos');
-        let dataTodoParsed = JSON.parse(dataTodo);
-        let foundTodo = dataTodoParsed.find((item) => item.id == id);
-        this.setState({selectTodo: foundTodo, modalSelectVisible: !this.state.modalSelectVisible})
+    selectTodo(id) {
+        getStorageItem('Todos').then(data => {
+            let foundTodo = data.find((item) => item.id == id);
+            this.setState({selectTodo: foundTodo, modalSelectVisible: !this.state.modalSelectVisible})
+        })
     }
 
-    TodoItem (text, id, isDone) {
+    TodoItem(text, id, isDone) {
         return (
           <View style={styles.todoItems}>
                    <View style={styles.textData}>
@@ -166,7 +180,7 @@ export default class ToDoComponent extends Component {
                         </View>
                         <View>
                         <TouchableHighlight
-                            style={styles.createTodo}
+                            style={this.state.todoText.length > 0 ? styles.createTodo : styles.noneDisplay}
                             onPress={this.createTodo}>
                             <Text style={styles.createTodoText}>Create</Text>
                         </TouchableHighlight>
@@ -207,7 +221,7 @@ export default class ToDoComponent extends Component {
                 </View>
                 
                 {
-                    this.state.storageTodo.length > 0 ? <FlatList
+                    this.state.isStorageTodo !== false ? <FlatList
                         data={this.state.storageTodo}
                         extraData={this.state}
                         renderItem={( { item } ) => this.TodoItem(item.text, item.id, item.isDone)}
@@ -227,8 +241,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#f0f0f0',
         height: '100%',
         paddingBottom: 125,
-        paddingLeft: 5,
-        paddingRight: 5,
+        paddingLeft: 10,
+        paddingRight: 10,
         overflow: 'hidden'
     },
     addTodoButtonWrap: {
@@ -258,7 +272,7 @@ const styles = StyleSheet.create({
     },
     modalWrap: {
         position: 'relative',
-        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        backgroundColor: 'rgba(0, 0, 0, 0.92)',
         height: '100%'
     },
     closeModal: {
@@ -274,11 +288,9 @@ const styles = StyleSheet.create({
         color: '#fff'
     },
     textAreaContainer: {
-        borderColor: 'gray',
-        borderWidth: 1,
         borderRadius: 20,
         backgroundColor: '#fff',
-        width: 300,
+        width: '90%',
         padding: 5,
         marginTop: 100,
         marginLeft: 'auto',
@@ -344,11 +356,9 @@ const styles = StyleSheet.create({
         flexDirection:'column',
         minHeight: 200,
         maxHeight: '70%',
-        borderColor: 'gray',
-        borderWidth: 1,
         borderRadius: 20,
         backgroundColor: '#fff',
-        width: 300,
+        width: '90%',
         paddingTop: 10,
         paddingLeft: 15,
         marginTop: 100,
@@ -366,5 +376,8 @@ const styles = StyleSheet.create({
     }, 
     noTodosText: {
         fontSize: 20
+    },
+    noneDisplay: {
+        display: 'none'
     }
 });

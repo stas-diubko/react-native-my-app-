@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component } from './node_modules/react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 
 export default class NoteComponent extends Component {

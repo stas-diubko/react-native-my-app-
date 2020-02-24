@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { NativeRouter, Route, Link } from "react-router-native";
-import NoteComponent from "./src/components/NoteComponent";
-import ToDoComponent from "./src/components/ToDoComponent";
-import MenuComponent from "./src/components/MenuComponent";
+import NoteComponent from "./src/components/note-component/NoteComponent";
+import TodoComponent from "./src/components/todo-component/ToDoComponent";
+import MenuComponent from "./src/components/menu-component/MenuComponent";
 
 const instructions = Platform.select({
     ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -17,7 +17,7 @@ export default class App extends Component {
            <NativeRouter>
                <MenuComponent/>
                 <Route exact path="/" component={NoteComponent} />
-                <Route path="/todo" component={ToDoComponent} />
+                <Route path="/todo" component={TodoComponent} />
            </NativeRouter>
         );
     }

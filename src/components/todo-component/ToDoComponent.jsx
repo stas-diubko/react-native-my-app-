@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { TouchableWithoutFeedback, TextInput, StyleSheet, Text, View, TouchableHighlight, Modal, AsyncStorage, FlatList, ScrollView } from 'react-native';
+import { TouchableWithoutFeedback, StyleSheet, Text, View, TouchableHighlight, Modal, FlatList, ScrollView} from 'react-native';
 import autoBind from 'react-autobind';
-import { CheckBox, Icon } from 'native-base';
+import { CheckBox, Icon, Textarea } from 'native-base';
 import moment from 'moment';
 import uuidv1 from 'uuid/v1';
-
 import { getStorageItem, setStorageItem } from '../../helpers/storageHelper';
+import { FadeInView } from '../../common/animated';
 
 export default class TodoComponent extends Component {
     constructor(props) {
@@ -16,7 +16,7 @@ export default class TodoComponent extends Component {
             todoText: '',
             storageTodo: [],
             selectTodo: {},
-            isStorageTodo: null
+            isStorageTodo: null,
         };
         autoBind(this);
     }
@@ -27,26 +27,28 @@ export default class TodoComponent extends Component {
 
     getTodo() {
         getStorageItem('Todos').then(dataTodo => {
-            this.setState({
-                storageTodo: dataTodo
-            }, () => {
-                if(this.state.storageTodo.length > 0) {
-                    this.setState({
-                        isStorageTodo: true
-                    })
-                } else {
-                    this.setState({
-                        isStorageTodo: false
-                    })
-                }
-               
-            })
+            if(dataTodo) {
+              this.setState({
+                    storageTodo: dataTodo
+                }, () => {
+                    if(this.state.storageTodo.length > 0) {
+                        this.setState({
+                            isStorageTodo: true
+                        })
+                    } else {
+                        this.setState({
+                            isStorageTodo: false
+                        })
+                    }
+                })  
+            }
         })
     }
 
     addTodo(visible) {
         this.setState({
-            modalVisible: visible
+            modalVisible: visible,
+            todoText: ''
         });
     }
 
@@ -140,11 +142,9 @@ export default class TodoComponent extends Component {
                         this.removeTodo(id);
                         }}
                     >
-                        <Icon name='trash' />
-                </TouchableWithoutFeedback>
+                        <Icon name='trash' style={styles.iconsSize}/>
+                    </TouchableWithoutFeedback>
                 </View>
-                
-               
           </View>
         );
     }
@@ -152,6 +152,7 @@ export default class TodoComponent extends Component {
     render() {
         return (
             <View style={styles.todoWrapper}>
+                <View style={styles.contentWrap}>
                 <Modal
                     animationType="slide"
                     transparent={true}
@@ -168,23 +169,27 @@ export default class TodoComponent extends Component {
                                 <Icon name='close'  style={styles.close}/>
                         </TouchableHighlight>
                         <View style={styles.textAreaContainer} >
-                            <TextInput
-                                onChangeText={text => this.onChangeText(text)}
-                                style={styles.textArea}
-                                underlineColorAndroid="transparent"
+                            <Textarea 
+                                style={styles.textArea} 
+                                rowSpan={5}
                                 placeholder="Type todo :)"
-                                placeholderTextColor="grey"
-                                numberOfLines={10}
-                                multiline={true}
+                                value={this.state.todoText}
+                                maxLength={150}
+                                onChangeText={text => this.onChangeText(text) }
                             />
                         </View>
-                        <View>
-                        <TouchableHighlight
-                            style={this.state.todoText.length > 0 ? styles.createTodo : styles.noneDisplay}
-                            onPress={this.createTodo}>
-                            <Text style={styles.createTodoText}>Create</Text>
-                        </TouchableHighlight>
-                        </View>
+                            
+                        <FadeInView toValue={1}>
+                            <View>
+                            <TouchableHighlight
+                                onPress={this.createTodo} 
+                                style={this.state.todoText.length > 0 ? styles.createTodo : styles.noneDisplay}
+                            >
+                                <Text style={styles.createTodoText}>Create</Text>
+                            </TouchableHighlight>
+                            </View> 
+                        </FadeInView>
+                        
                         </View>
                     </View>
                 </Modal>
@@ -211,14 +216,7 @@ export default class TodoComponent extends Component {
                         
                         </View>
                     </View>
-                </Modal>
-                <View  style={styles.addTodoButtonWrap}>
-                    <TouchableHighlight onPress={() => this.addTodo(true)} underlayColor="white" style={styles.addTodoButton}>
-                        <View >
-                            <Text style={styles.inAddButton}>Create todo</Text>
-                        </View>
-                    </TouchableHighlight>
-                </View>
+                </Modal>           
                 
                 {
                     this.state.isStorageTodo !== false ? <FlatList
@@ -229,7 +227,14 @@ export default class TodoComponent extends Component {
                     /> : <View style={styles.noTodos}><Text style={styles.noTodosText}>No todos here yet</Text></View>
                 }
                
-
+            </View>
+            <View style={styles.addTodoButtonWrap}>
+                <TouchableHighlight onPress={() => this.addTodo(true)} underlayColor="white" style={styles.addTodoButton}>
+                    <View >
+                        <Text style={styles.inAddButton}>Create todo</Text>
+                    </View>
+                </TouchableHighlight>
+            </View>
             </View>
         )
     }
@@ -241,9 +246,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#f0f0f0',
         height: '100%',
         paddingBottom: 125,
+        overflow: 'hidden'
+    },
+    contentWrap: {
         paddingLeft: 10,
         paddingRight: 10,
-        overflow: 'hidden'
     },
     addTodoButtonWrap: {
         position: 'absolute',
@@ -260,8 +267,8 @@ const styles = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: '70%',
-        padding: 5,
+        width: '80%',
+        padding: 3,
         borderRadius: 400,
         backgroundColor: '#000',
     },
@@ -288,7 +295,7 @@ const styles = StyleSheet.create({
         color: '#fff'
     },
     textAreaContainer: {
-        borderRadius: 20,
+        borderRadius: 5,
         backgroundColor: '#fff',
         width: '90%',
         padding: 5,
@@ -301,8 +308,8 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start"
     },
     createTodo: {
-        height: 45,
-        width: 280,
+        height: 30,
+        width: '70%',
         marginTop: 10,
         borderRadius: 20,
         marginLeft: 'auto',
@@ -312,7 +319,7 @@ const styles = StyleSheet.create({
     },
     createTodoText: {
         padding: 0,
-        lineHeight: 45,
+        lineHeight: 30,
         fontSize: 18,
         color: '#fff'
     },
@@ -340,11 +347,15 @@ const styles = StyleSheet.create({
         top: 11
     },
     resolveTodo: {
-        borderColor: '#000'
+        borderColor: '#000',
+        width: 17,
+        height: 17
     },
     resolveTodoChecked: {
         backgroundColor: '#000',
-        borderColor: '#000'
+        borderColor: '#000',
+        width: 17,
+        height: 17,
     },
     resolveTodoWrap: {
         position: 'absolute',
@@ -379,5 +390,8 @@ const styles = StyleSheet.create({
     },
     noneDisplay: {
         display: 'none'
+    },
+    iconsSize: {
+        fontSize: 24
     }
 });

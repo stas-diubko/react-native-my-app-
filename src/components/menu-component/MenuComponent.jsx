@@ -1,7 +1,7 @@
-import React, { Component } from './node_modules/react';
+import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
-import { NativeRouter, Route, Link } from "./node_modules/react-router-native";
-import autoBind from './node_modules/react-autobind';
+import { NativeRouter, Route, Link } from "react-router-native";
+import autoBind from 'react-autobind';
 
 export default class MenuComponent extends Component {
     constructor(props) {

@@ -7,6 +7,7 @@ import {
         TouchableWithoutFeedback,
         Modal,
         FlatList,
+        Animated
     } from 'react-native';
 import { Icon, Textarea } from 'native-base';
 import autoBind from 'react-autobind';
@@ -30,6 +31,8 @@ export default class NoteComponent extends Component {
             selectText: '',
             isSelectedToDelete: false,
             notesForDeleting: [],
+            offset: 0,
+            downScroll: false
         };
        
         autoBind(this);
@@ -162,9 +165,19 @@ export default class NoteComponent extends Component {
         })
     }
 
+    onScrollItems(e) {
+        let currentOffset = e.nativeEvent.contentOffset.y;
+        if(currentOffset < 0) {
+            currentOffset = 0
+        }
+        let isDownScroll = currentOffset > this.state.offset ? true : false;
+        this.setState({offset: currentOffset, downScroll: isDownScroll});
+    }
+
     render() {
         return (
-            <View style={styles.noteWrapper}>
+            
+                <View style={styles.noteWrapper}>
                 <View style={
                     this.state.notesForDeleting.length > 0
                     ? styles.deletingIcon : styles.noneDisplay}>
@@ -213,14 +226,14 @@ export default class NoteComponent extends Component {
                         
                         </View>
                     </View>
-                </Modal>
+                    </Modal>
 
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={this.state.modalNoteSelectVisible}
-                > 
-                <View style={styles.modalWrap}>
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={this.state.modalNoteSelectVisible}
+                    > 
+                    <View style={styles.modalWrap}>
                         <TouchableHighlight
                             style={styles.closeModal}
                             onPress={() => this.closeSelectModal()
@@ -245,39 +258,40 @@ export default class NoteComponent extends Component {
                                 <Text style={styles.createNoteText}>Save</Text>
                             </TouchableHighlight>
                         </FadeInView>
-                </View>
+                    </View>
                 </Modal>
                 
                 {
                     this.state.isStorageNote ? 
-                    <FlatList
-                    onPress={this.openSelelectNote}
-                    data={this.state.storageNotes}
-                    extraData={this.state}
-                    renderItem={( { item } ) => <NoteItem 
-                                                    text={item.text}
-                                                    id={item.id}
-                                                    creationDate={item.creationDate}
-                                                    updateingDate={item.lastUpdatingDate}
-                                                    openNote={()=>this.openSelelectNote(item.id)}
-                                                    selectToDelete={() => this.selectToDelete(item.id)}
-                                                    isSelect={this.state.notesForDeleting.length > 0 ? true : false}
-                                                />}
-                    keyExtractor={(item) => item.id}
-                /> 
-                : <View style={styles.noNotes}><Text style={styles.noNotesText}>No notes here yet</Text></View>
+                         <FlatList
+                            onScroll={e => this.onScrollItems(e)}
+                            onPress={this.openSelelectNote}
+                            data={this.state.storageNotes}
+                            extraData={this.state}
+                            renderItem={( { item } ) => <NoteItem 
+                                                            text={item.text}
+                                                            id={item.id}
+                                                            creationDate={item.creationDate}
+                                                            updateingDate={item.lastUpdatingDate}
+                                                            openNote={()=>this.openSelelectNote(item.id)}
+                                                            selectToDelete={() => this.selectToDelete(item.id)}
+                                                            isSelect={this.state.notesForDeleting.length > 0 ? true : false}
+                                                        />}
+                            keyExtractor={(item) => item.id}
+                        />            
+                    : <View style={styles.noNotes}><Text style={styles.noNotesText}>No notes here yet</Text></View>
                 }
-
                 </View>
-                <View  style={styles.addNoteButtonWrap}>
-                    <TouchableHighlight onPress={() => this.addNote(true)} underlayColor="white" style={styles.addNoteButton}>
-                        <View >
-                            <Text style={styles.inAddNoteButton}>Create note</Text>
-                        </View>
-                    </TouchableHighlight>
-                </View>
-
+                    <View style={this.state.downScroll ? styles.noneDisplay : styles.addNoteButtonWrap}>
+                        <TouchableHighlight onPress={() => this.addNote(true)} underlayColor="white">
+                            <View >
+                                <Icon name="add-circle" style={styles.addNoteButtonIcon} />
+                            </View>
+                        </TouchableHighlight>
+                    </View>
             </View>
+            
+            
         )
     }
 }
@@ -289,7 +303,7 @@ const styles = StyleSheet.create({
         height: '100%',
         paddingTop: 10,
        
-        paddingBottom: 125,
+        paddingBottom: 65,
     },
     contentWrap: {
         paddingLeft: 10,
@@ -298,27 +312,17 @@ const styles = StyleSheet.create({
     addNoteButtonWrap: {
         position: 'absolute',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: 'flex-end',
         height: 40,
+        right: 20,
         width: '100%',
         padding: 0,
-        bottom: 75,
+        bottom: 100,
         zIndex: 1,
     },
-    addNoteButton: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '80%',
-        padding: 3,
-        borderRadius: 400,
-        backgroundColor: '#000',
-    },
-    inAddNoteButton: {
-        color: '#fff',
-        fontSize: 20,
-        margin: 0
+    addNoteButtonIcon: {
+        fontSize: 60,
+        margin: 0,
     },
     close: {
         color: '#fff'

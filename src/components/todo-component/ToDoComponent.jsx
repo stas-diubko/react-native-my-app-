@@ -17,6 +17,8 @@ export default class TodoComponent extends Component {
             storageTodo: [],
             selectTodo: {},
             isStorageTodo: null,
+            offset: 0,
+            downScroll: false
         };
         autoBind(this);
     }
@@ -149,6 +151,15 @@ export default class TodoComponent extends Component {
         );
     }
 
+    onScrollItems(e) {
+        let currentOffset = e.nativeEvent.contentOffset.y;
+        if(currentOffset < 0) {
+            currentOffset = 0
+        }
+        let isDownScroll = currentOffset > this.state.offset ? true : false;
+        this.setState({offset: currentOffset, downScroll: isDownScroll});
+    }
+
     render() {
         return (
             <View style={styles.todoWrapper}>
@@ -220,6 +231,7 @@ export default class TodoComponent extends Component {
                 
                 {
                     this.state.isStorageTodo !== false ? <FlatList
+                        onScroll={e => this.onScrollItems(e)}
                         data={this.state.storageTodo}
                         extraData={this.state}
                         renderItem={( { item } ) => this.TodoItem(item.text, item.id, item.isDone)}
@@ -228,10 +240,11 @@ export default class TodoComponent extends Component {
                 }
                
             </View>
-            <View style={styles.addTodoButtonWrap}>
-                <TouchableHighlight onPress={() => this.addTodo(true)} underlayColor="white" style={styles.addTodoButton}>
+            <View  style={this.state.downScroll ? styles.noneDisplay : styles.addTodoButton}>
+                <TouchableHighlight onPress={() => this.addTodo(true)} underlayColor="white">
                     <View >
-                        <Text style={styles.inAddButton}>Create todo</Text>
+                        <Icon name="add-circle" style={styles.addTodoButtonIcon} />
+                        {/* <Text style={styles.inAddButton}>Create todo</Text> */}
                     </View>
                 </TouchableHighlight>
             </View>
@@ -245,7 +258,8 @@ const styles = StyleSheet.create({
         position: 'relative',
         backgroundColor: '#f0f0f0',
         height: '100%',
-        paddingBottom: 125,
+        paddingTop: 10,
+        paddingBottom: 65,
         overflow: 'hidden'
     },
     contentWrap: {
@@ -264,13 +278,15 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     addTodoButton: {
+        position: 'absolute',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '80%',
-        padding: 3,
-        borderRadius: 400,
-        backgroundColor: '#000',
+        alignItems: 'flex-end',
+        height: 40,
+        right: 20,
+        width: '100%',
+        padding: 0,
+        bottom: 100,
+        zIndex: 1,
     },
     inAddButton: {
         color: '#fff',
@@ -326,7 +342,7 @@ const styles = StyleSheet.create({
     todoItems: {
         position: 'relative',
         backgroundColor: '#fff',
-        marginTop: 10,
+        marginBottom: 10,
         borderRadius: 5,
         paddingLeft: 20,
         height: 50
@@ -393,5 +409,9 @@ const styles = StyleSheet.create({
     },
     iconsSize: {
         fontSize: 24
-    }
+    },
+    addTodoButtonIcon: {
+        fontSize: 60,
+        margin: 0,
+    },
 });

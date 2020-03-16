@@ -291,7 +291,6 @@ export default class NoteComponent extends Component {
                     </View>
             </View>
             
-            
         )
     }
 }
@@ -315,7 +314,6 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
         height: 40,
         right: 20,
-        width: '100%',
         padding: 0,
         bottom: 100,
         zIndex: 1,

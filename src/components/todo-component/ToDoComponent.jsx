@@ -4,8 +4,9 @@ import autoBind from 'react-autobind';
 import { CheckBox, Icon, Textarea } from 'native-base';
 import moment from 'moment';
 import uuidv1 from 'uuid/v1';
-import { getStorageItem, setStorageItem } from '../../helpers/storageHelper';
+import { getStorageItem, setStorageItem, removeStorageItem } from '../../helpers/storageHelper';
 import { FadeInView } from '../../common/animated';
+import TodoItem from './TodoItem';
 
 export default class TodoComponent extends Component {
     constructor(props) {
@@ -18,7 +19,9 @@ export default class TodoComponent extends Component {
             selectTodo: {},
             isStorageTodo: null,
             offset: 0,
-            downScroll: false
+            downScroll: false,
+            todosForDeleting: [],
+            isSelectedToDelete: false,
         };
         autoBind(this);
     }
@@ -93,13 +96,14 @@ export default class TodoComponent extends Component {
             }
         })
     }
-
-    removeTodo(id) {
-        getStorageItem('Todos').then(data => {
-            const resultTodos = data.filter(item => item.id != id);
-            setStorageItem('Todos', resultTodos).then(() => {
-                this.getTodo();
-            })
+    
+    removeTodos() {
+        removeStorageItem('Todos', this.state.todosForDeleting).then(() => {
+            this.setState({
+                isSelectedToDelete: false,
+                todosForDeleting: [] 
+            });
+            this.getTodo();
         })
     }
 
@@ -120,33 +124,39 @@ export default class TodoComponent extends Component {
         })
     }
 
+    selectTodosToDelete(id) {
+        let deletingArray = this.state.todosForDeleting;
+        if (deletingArray.includes(id)) {
+            const result = deletingArray.filter(item => item != id);
+            this.setState({
+                todosForDeleting: result
+            })
+        } else {
+            deletingArray.push(id);
+            this.setState({
+                todosForDeleting: deletingArray
+            })
+        }
+        
+    }
+
     TodoItem(text, id, isDone) {
         return (
           <View style={styles.todoItems}>
-                   <View style={styles.textData}>
-                <TouchableWithoutFeedback
-                    onPress={() => {
-                    this.selectTodo(id);
-                    }}>
-                        <Text style={isDone ? styles.throughText : null} numberOfLines={1}>{text}</Text>
-                </TouchableWithoutFeedback>
-                    
-                </View>
-             
-                <View style={styles.resolveTodoWrap}>
-                    <CheckBox style={isDone ? styles.resolveTodoChecked : styles.resolveTodo} onPress={()=>this.resolveTodo(id)} checked={isDone} />
-                </View>
-                
-                <View style={styles.removeTodo}>
+                <View style={styles.textData}>
                     <TouchableWithoutFeedback
-                        style={styles.removeTodo}
+                    
                         onPress={() => {
-                        this.removeTodo(id);
-                        }}
-                    >
-                        <Icon name='trash' style={styles.iconsSize}/>
+                        this.selectTodo(id);
+                        }}>
+                            <Text style={isDone ? styles.throughText : null} numberOfLines={1}>{text}</Text>
                     </TouchableWithoutFeedback>
-                </View>
+                        
+                    </View>
+                
+                    <View style={styles.resolveTodoWrap}>
+                        <CheckBox style={isDone ? styles.resolveTodoChecked : styles.resolveTodo} onPress={()=>this.resolveTodo(id)} checked={isDone} />
+                    </View>
           </View>
         );
     }
@@ -163,6 +173,17 @@ export default class TodoComponent extends Component {
     render() {
         return (
             <View style={styles.todoWrapper}>
+                <View style={
+                    this.state.todosForDeleting.length > 0
+                    ? styles.deletingIcon : styles.noneDisplay}>
+                        <TouchableWithoutFeedback
+                            onPress={() => {
+                            this.removeTodos();
+                            }}
+                        >
+                            <Icon name='trash' style={styles.trashIcon}/>
+                        </TouchableWithoutFeedback>
+                </View>
                 <View style={styles.contentWrap}>
                 <Modal
                     animationType="slide"
@@ -230,11 +251,20 @@ export default class TodoComponent extends Component {
                 </Modal>           
                 
                 {
-                    this.state.isStorageTodo !== false ? <FlatList
+                    this.state.isStorageTodo !== false ? 
+                    <FlatList
                         onScroll={e => this.onScrollItems(e)}
                         data={this.state.storageTodo}
                         extraData={this.state}
-                        renderItem={( { item } ) => this.TodoItem(item.text, item.id, item.isDone)}
+                        renderItem={( { item } ) => <TodoItem 
+                                                        text={item.text}
+                                                        id={item.id}
+                                                        isDone={item.isDone}
+                                                        removeTodo={() => this.selectTodosToDelete(item.id)}
+                                                        selectTodo={() => this.selectTodo(item.id)}
+                                                        resolveTodo={() => this.resolveTodo(item.id)}
+                                                        isSelect={this.state.todosForDeleting.length > 0 ? true : false}
+                                                    />}
                         keyExtractor={(item) => item.id}
                     /> : <View style={styles.noTodos}><Text style={styles.noTodosText}>No todos here yet</Text></View>
                 }
@@ -244,7 +274,6 @@ export default class TodoComponent extends Component {
                 <TouchableHighlight onPress={() => this.addTodo(true)} underlayColor="white">
                     <View >
                         <Icon name="add-circle" style={styles.addTodoButtonIcon} />
-                        {/* <Text style={styles.inAddButton}>Create todo</Text> */}
                     </View>
                 </TouchableHighlight>
             </View>
@@ -275,7 +304,6 @@ const styles = StyleSheet.create({
         width: '100%',
         padding: 0,
         bottom: 75,
-        zIndex: 1,
     },
     addTodoButton: {
         position: 'absolute',
@@ -283,10 +311,8 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
         height: 40,
         right: 20,
-        width: '100%',
         padding: 0,
         bottom: 100,
-        zIndex: 1,
     },
     inAddButton: {
         color: '#fff',
@@ -414,4 +440,13 @@ const styles = StyleSheet.create({
         fontSize: 60,
         margin: 0,
     },
+    deletingIcon: {
+        position: 'absolute',
+        right: 15,
+        top: 10,
+        zIndex: 1,
+    },
+    trashIcon: {
+        fontSize: 40
+    }
 });

@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
-import { NativeRouter, Route, Link } from "react-router-native";
+import { NativeRouter, Route, Link, withRouter } from "react-router-native";
 import autoBind from 'react-autobind';
 
-export default class MenuComponent extends Component {
+class MenuComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -12,26 +12,23 @@ export default class MenuComponent extends Component {
         autoBind(this);
     }
 
-    setPageNameToState(name) {
-        this.setState({
-            currentPage: name
-        })
-    }
-
     render() {
         return (
             <View style={styles.menuWrapper}>
                 <Link
                     to="/"
-                    onPress={()=> {this.setPageNameToState('notes')}}
                 >
-                    <Text style={ this.state.currentPage == 'notes' ? styles.underLineMenuButton : styles.menuItems}>Notes</Text>
+                    <Text style={ this.props.location.pathname == '/' ? styles.underLineMenuButton : styles.menuItems}>Notes</Text>
                 </Link>
                 <Link
                     to="/todo"
-                    onPress={()=> {this.setPageNameToState('todos')}}
                 >
-                    <Text style={ this.state.currentPage == 'todos' ? styles.underLineMenuButton : styles.menuItems}>Todos</Text>
+                    <Text style={  this.props.location.pathname == '/todo' ? styles.underLineMenuButton : styles.menuItems}>Todos</Text>
+                </Link>
+                <Link
+                    to="/news"
+                >
+                    <Text style={  this.props.location.pathname == '/news' ? styles.underLineMenuButton : styles.menuItems}>News</Text>
                 </Link>
           </View>
         )
@@ -61,3 +58,5 @@ const styles = StyleSheet.create({
         // textDecorationLine: 'underline'
     }
 });
+
+export default withRouter(MenuComponent);

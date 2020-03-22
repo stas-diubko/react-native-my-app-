@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
-import { NativeRouter, Route, Link } from "react-router-native";
+import { Platform } from 'react-native';
+import { NativeRouter, Route } from "react-router-native";
 import NoteComponent from "./src/components/note-component/NoteComponent";
 import TodoComponent from "./src/components/todo-component/ToDoComponent";
 import MenuComponent from "./src/components/menu-component/MenuComponent";

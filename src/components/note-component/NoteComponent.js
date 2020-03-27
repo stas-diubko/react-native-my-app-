@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
         height: '100%',
         paddingTop: 10,
        
-        paddingBottom: 65,
+        paddingBottom: 42,
     },
     contentWrap: {
         paddingLeft: 10,
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
         height: 40,
         right: 20,
         padding: 0,
-        bottom: 100,
+        bottom: 80,
         zIndex: 1,
     },
     addNoteButtonIcon: {

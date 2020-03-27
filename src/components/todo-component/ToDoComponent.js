@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f0f0f0',
         height: '100%',
         paddingTop: 10,
-        paddingBottom: 65,
+        paddingBottom: 42,
         overflow: 'hidden'
     },
     contentWrap: {
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
         height: 40,
         right: 20,
         padding: 0,
-        bottom: 100,
+        bottom: 80,
     },
     inAddButton: {
         color: '#fff',

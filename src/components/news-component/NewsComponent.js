@@ -10,21 +10,20 @@ import { Loader } from '../../common/loader';
 import { Toaster } from '../../common/toaster';
 import moment from 'moment';
 
-import { articles } from './testArticles';
-
 export default class NewsComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
             page: 1,
             pageSize: 10,
-            articles: articles, //[]
+            articles: [],
             isLoad: false,
             isVisibleTost: false,
             textToast: null,
             currentCountry: 'ua',
             isModalVisible: false,
-            category: 'general'
+            category: 'general',
+            setRefreshing: false
         };
         autoBind(this);
     }
@@ -61,24 +60,21 @@ export default class NewsComponent extends Component {
     getNews = () => {
         this.setActiveLoader(true)
         const { page, articles } = this.state;
-        // send.send('GET', `top-headlines?country=${this.state.currentCountry}&category=${this.state.category}&apiKey=${API_KEY}&page=${this.state.page}&pageSize=${this.state.pageSize}`).then(data => {
-        //     if(data.data.status === 'ok') {
-        //         this.setActiveLoader(false)
-        //         this.setState({
-        //             articles: articles.concat(data.data.articles),
-        //             page: page + 1
-        //         })
-        //     } else {
-        //         this.setActiveLoader(false);
-        //         this.setActiveToast(true, 'something went wrong :(');
-        //     }
-        // }).catch(error => {
-        //     this.setActiveLoader(false);
-        //     this.setActiveToast(true, error);
-        // })
-
-
-        this.setActiveLoader(false)
+        send.send('GET', `top-headlines?country=${this.state.currentCountry}&category=${this.state.category}&apiKey=${API_KEY}&page=${this.state.page}&pageSize=${this.state.pageSize}`).then(data => {
+            if(data.data.status === 'ok') {
+                this.setActiveLoader(false)
+                this.setState({
+                    articles: articles.concat(data.data.articles),
+                    page: page + 1
+                })
+            } else {
+                this.setActiveLoader(false);
+                this.setActiveToast(true, 'something went wrong :(');
+            }
+        }).catch(error => {
+            this.setActiveLoader(false);
+            this.setActiveToast(true, error);
+        })
     }
 
     fetchResult = () => {
@@ -114,16 +110,17 @@ export default class NewsComponent extends Component {
                                 selectedValue={this.state.currentCountry}
                                 style={styles.pickerStyle}
                                 onValueChange={(itemValue) => this.setFilterCountry(itemValue)}>
-                                <Picker.Item label="Ukraine" value="ua" />
+                                <Picker.Item label="UA" value="ua" />
                                 <Picker.Item label="USA" value="us" />
-                                <Picker.Item label="Great Britain" value="gb" />
-                                <Picker.Item label="Russia" value="ru" />
+                                <Picker.Item label="GB" value="gb" />
+                                <Picker.Item label="RU" value="ru" />
                             </Picker> 
                             
 
         let pickerCategory = <Picker
+                                enabled={false}
                                 selectedValue={this.state.category}
-                                style={styles.pickerStyle}
+                                style={styles.pickerStyleCategory}
                                 onValueChange={(itemValue) => this.setFilterCategory(itemValue)}>
                                 <Picker.Item label="General" value="general" />
                                 <Picker.Item label="Business" value="business" />
@@ -131,7 +128,7 @@ export default class NewsComponent extends Component {
                                 <Picker.Item label="Sports" value="sports" />
                                 <Picker.Item label="Technology" value="technology" />
                             </Picker>
-
+                            
         return (
             <View style={styles.newsWrapper} >
                 <Loader 
@@ -183,7 +180,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f0f0f0',
         height: '100%',
         paddingTop: 10,
-        paddingBottom: 65
+        paddingBottom: 42
     },
     searchIcon: {
         color: '#fff'
@@ -200,7 +197,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingLeft: 12,
         paddingRight: 12,
-        backgroundColor: '#000',
+        backgroundColor: '#000'
     },
     bottomText: {
         fontWeight: 'bold',
@@ -221,11 +218,20 @@ const styles = StyleSheet.create({
     },
     pickerStyle: {
         height: 40,
-        width: 90,
+        width: 80,
         color: '#fff',
         backgroundColor: '#000',
         marginRight: 5,
-        padding: 0
+        padding: 0,
+        overflow: 'visible'
+    },
+    pickerStyleCategory: {
+        height: 40,
+        width: 120,
+        color: '#fff',
+        backgroundColor: '#000',
+        padding: 0,
+        overflow: 'visible'
     },
     pickersWrap: {
         display: 'flex',

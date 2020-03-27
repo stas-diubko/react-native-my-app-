@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       backgroundColor: '#000',
       justifyContent: 'flex-start',
-      paddingTop: 30,
+      paddingTop: 10,
     },
     menuItems: {
       color: 'grey',

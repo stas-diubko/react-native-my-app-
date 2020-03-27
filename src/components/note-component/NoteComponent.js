@@ -240,8 +240,9 @@ export default class NoteComponent extends Component {
                             }>
                                 <Icon name='close'  style={styles.close}/>
                         </TouchableHighlight>
-                        <View  style={styles.textareaStyle}>
+                        <View style={styles.textareaStyle}>
                             <Textarea
+                                style={styles.textAreaText}
                                 rowSpan={7}
                                 maxLength={350}
                                 value={this.state.selectText}
@@ -343,6 +344,9 @@ const styles = StyleSheet.create({
         width: '92%',
         borderRadius: 5,
         padding: 5
+    },
+    textAreaText: {
+        color: '#000'
     },
     createNote: {
         height: 30,

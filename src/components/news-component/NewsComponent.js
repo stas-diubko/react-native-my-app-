@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, FlatList, Linking, Picker} from 'react-native';
+import { StyleSheet, Text, View, FlatList, Linking, Picker } from 'react-native';
+import NetInfo from "@react-native-community/netinfo";
+import { useNetInfo } from "@react-native-community/netinfo";
 import autoBind from 'react-autobind';
 import { API_KEY } from 'react-native-dotenv';
 import send from '../../helpers/requestHelper';
@@ -8,13 +10,15 @@ import { Loader } from '../../common/loader';
 import { Toaster } from '../../common/toaster';
 import moment from 'moment';
 
+import { articles } from './testArticles';
+
 export default class NewsComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
             page: 1,
             pageSize: 10,
-            articles: [],
+            articles: articles, //[]
             isLoad: false,
             isVisibleTost: false,
             textToast: null,
@@ -26,7 +30,14 @@ export default class NewsComponent extends Component {
     }
 
     componentDidMount() {
+        // this.getNetInfo()
         this.getNews()
+    }
+
+    getNetInfo = () => {
+        NetInfo.fetch().then(data => {
+            console.log("Connection type", data);
+          });
     }
 
     setActiveLoader = (isLoad) => {
@@ -50,21 +61,24 @@ export default class NewsComponent extends Component {
     getNews = () => {
         this.setActiveLoader(true)
         const { page, articles } = this.state;
-        send.send('GET', `top-headlines?country=${this.state.currentCountry}&category=${this.state.category}&apiKey=${API_KEY}&page=${this.state.page}&pageSize=${this.state.pageSize}`).then(data => {
-            if(data.data.status === 'ok') {
-                this.setActiveLoader(false)
-                this.setState({
-                    articles: articles.concat(data.data.articles),
-                    page: page + 1
-                })
-            } else {
-                this.setActiveLoader(false);
-                this.setActiveToast(true, 'something went wrong :(');
-            }
-        }).catch(error => {
-            this.setActiveLoader(false);
-            this.setActiveToast(true, error);
-        })
+        // send.send('GET', `top-headlines?country=${this.state.currentCountry}&category=${this.state.category}&apiKey=${API_KEY}&page=${this.state.page}&pageSize=${this.state.pageSize}`).then(data => {
+        //     if(data.data.status === 'ok') {
+        //         this.setActiveLoader(false)
+        //         this.setState({
+        //             articles: articles.concat(data.data.articles),
+        //             page: page + 1
+        //         })
+        //     } else {
+        //         this.setActiveLoader(false);
+        //         this.setActiveToast(true, 'something went wrong :(');
+        //     }
+        // }).catch(error => {
+        //     this.setActiveLoader(false);
+        //     this.setActiveToast(true, error);
+        // })
+
+
+        this.setActiveLoader(false)
     }
 
     fetchResult = () => {
@@ -96,30 +110,27 @@ export default class NewsComponent extends Component {
     }
 
     render() {
-        let pickerCountry = <View>
-                                <Picker
-                                    selectedValue={this.state.currentCountry}
-                                    style={styles.pickerStyle}
-                                    onValueChange={(itemValue) => this.setFilterCountry(itemValue)}>
-                                    <Picker.Item label="Ukraine" value="ua" />
-                                    <Picker.Item label="USA" value="us" />
-                                    <Picker.Item label="Great Britain" value="gb" />
-                                    <Picker.Item label="Russia" value="ru" />
-                                </Picker> 
-                            </View>
+        let pickerCountry =  <Picker
+                                selectedValue={this.state.currentCountry}
+                                style={styles.pickerStyle}
+                                onValueChange={(itemValue) => this.setFilterCountry(itemValue)}>
+                                <Picker.Item label="Ukraine" value="ua" />
+                                <Picker.Item label="USA" value="us" />
+                                <Picker.Item label="Great Britain" value="gb" />
+                                <Picker.Item label="Russia" value="ru" />
+                            </Picker> 
+                            
 
-        let pickerCategory = <View>
-                                <Picker
-                                    selectedValue={this.state.category}
-                                    style={styles.pickerStyle}
-                                    onValueChange={(itemValue) => this.setFilterCategory(itemValue)}>
-                                    <Picker.Item label="General" value="general" />
-                                    <Picker.Item label="Business" value="business" />
-                                    <Picker.Item label="Science" value="science" />
-                                    <Picker.Item label="Sports" value="sports" />
-                                    <Picker.Item label="Technology" value="technology" />
-                                </Picker> 
-                            </View>
+        let pickerCategory = <Picker
+                                selectedValue={this.state.category}
+                                style={styles.pickerStyle}
+                                onValueChange={(itemValue) => this.setFilterCategory(itemValue)}>
+                                <Picker.Item label="General" value="general" />
+                                <Picker.Item label="Business" value="business" />
+                                <Picker.Item label="Science" value="science" />
+                                <Picker.Item label="Sports" value="sports" />
+                                <Picker.Item label="Technology" value="technology" />
+                            </Picker>
 
         return (
             <View style={styles.newsWrapper} >
@@ -143,7 +154,7 @@ export default class NewsComponent extends Component {
                                                         author={item.author}
                                                         description={item.description}
                                                         link={item.url}
-                                                        publishTime={moment(item.publishedAt).format('lll')}
+                                                        publishTime={moment(item.publishedAt).fromNow()}
                                                     />}
                         keyExtractor={(item, index) => index.toString()}
                     />
@@ -187,8 +198,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingLeft: 7,
-        paddingRight: 7,
+        paddingLeft: 12,
+        paddingRight: 12,
         backgroundColor: '#000',
     },
     bottomText: {

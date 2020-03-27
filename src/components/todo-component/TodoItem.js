@@ -76,7 +76,8 @@ const styles = StyleSheet.create({
     },
     throughText: {
         textDecorationLine: 'line-through',
-        textDecorationStyle: 'solid'
+        textDecorationStyle: 'solid',
+        color:'#000'
     },
     removeTodo: {
         position: 'absolute',

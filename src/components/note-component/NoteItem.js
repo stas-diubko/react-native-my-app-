@@ -38,7 +38,7 @@ export default class NoteItem extends Component {
                  > 
                     <View style={this.state.isSelected ? styles.noteItemsDeleting : styles.noteItems}>
                             <View style={styles.textData}>
-                                <Text numberOfLines={3}>{this.props.text}</Text>
+                                <Text numberOfLines={3} style={styles.noteText}>{this.props.text}</Text>
                             </View>
                             <View style={styles.noteCreationDate}>
                                 <Text style={styles.noteCreationDateText}>{this.props.updateingDate ? this.props.updateingDate : this.props.creationDate}</Text>
@@ -91,5 +91,8 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         paddingLeft: 10,
         height: 110,
+    },
+    noteText: {
+        color: '#000'
     }
 })

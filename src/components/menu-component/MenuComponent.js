@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
     menuWrapper: {
       position: 'relative',
       display: 'flex',
+      alignItems: 'center',
       flexDirection: 'row',
       backgroundColor: '#000',
       justifyContent: 'flex-start',

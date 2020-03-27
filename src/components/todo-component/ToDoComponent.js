@@ -242,7 +242,7 @@ export default class TodoComponent extends Component {
                         </TouchableHighlight>
 
                         <ScrollView style={styles.selectText} contentContainerStyle={{flexGrow:1, justifyContent: 'space-between'}}>
-                            <Text>{this.state.selectTodo.text}</Text>
+                            <Text style={styles.todoTextStyle}>{this.state.selectTodo.text}</Text>
                             <Text style={styles.selectTextDate} >{this.state.selectTodo.creationDate}</Text>
                         </ScrollView>
                         
@@ -448,5 +448,8 @@ const styles = StyleSheet.create({
     },
     trashIcon: {
         fontSize: 40
+    },
+    todoTextStyle: {
+        color: '#000'
     }
 });

@@ -47,7 +47,7 @@ export default class TodoItem extends Component {
                                 }      
                             }
                         >
-                            <Text style={this.props.isDone ? styles.throughText : null} numberOfLines={1}>{this.props.text}</Text>
+                            <Text style={this.props.isDone ? styles.throughText : styles.textTodoStyle} numberOfLines={1}>{this.props.text}</Text>
                     </TouchableWithoutFeedback>
                         
                 </View>
@@ -77,6 +77,9 @@ const styles = StyleSheet.create({
     throughText: {
         textDecorationLine: 'line-through',
         textDecorationStyle: 'solid',
+        color:'#000'
+    },
+    textTodoStyle: {
         color:'#000'
     },
     removeTodo: {

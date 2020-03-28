@@ -1,14 +1,31 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, FlatList, Linking, Picker } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Linking, Picker, TouchableWithoutFeedback, Modal, TouchableHighlight, SectionList, SafeAreaView } from 'react-native';
 import NetInfo from "@react-native-community/netinfo";
 import { useNetInfo } from "@react-native-community/netinfo";
 import autoBind from 'react-autobind';
+import { Icon } from 'native-base';
 import { API_KEY } from 'react-native-dotenv';
 import send from '../../helpers/requestHelper';
 import NewsItemComponent from './NewsItem';
 import { Loader } from '../../common/loader';
 import { Toaster } from '../../common/toaster';
 import moment from 'moment';
+import { articles } from './testArticles';
+import SelectionItem from './SelectionItem';
+
+const DATA_COUNTRIES = [
+    {
+      title: "Countries",
+      data: ["Ukraine", "USA", "Great Britain", "Russia"]
+    }
+];
+
+const DATA_CATEGORIES = [
+    {
+      title: "Categories",
+      data: ["General", "Business", "Science", "Sports", "Technology"]
+    }
+];
 
 export default class NewsComponent extends Component {
     constructor(props) {
@@ -16,14 +33,17 @@ export default class NewsComponent extends Component {
         this.state = {
             page: 1,
             pageSize: 10,
-            articles: [],
+            articles: [],//articles
             isLoad: false,
             isVisibleTost: false,
             textToast: null,
-            currentCountry: 'ua',
+            currentCountryCode: 'ua',
+            currentCountry: 'Ukraine',
             isModalVisible: false,
             category: 'general',
-            setRefreshing: false
+            currentCategry: 'General',
+            setRefreshing: false,
+            isOpenModal: false
         };
         autoBind(this);
     }
@@ -33,11 +53,11 @@ export default class NewsComponent extends Component {
         this.getNews()
     }
 
-    getNetInfo = () => {
-        NetInfo.fetch().then(data => {
-            console.log("Connection type", data);
-          });
-    }
+    // getNetInfo = () => {
+    //     NetInfo.fetch().then(data => {
+    //         console.log("Connection type", data);
+    //       });
+    // }
 
     setActiveLoader = (isLoad) => {
         this.setState({
@@ -60,7 +80,7 @@ export default class NewsComponent extends Component {
     getNews = () => {
         this.setActiveLoader(true)
         const { page, articles } = this.state;
-        send.send('GET', `top-headlines?country=${this.state.currentCountry}&category=${this.state.category}&apiKey=${API_KEY}&page=${this.state.page}&pageSize=${this.state.pageSize}`).then(data => {
+        send.send('GET', `top-headlines?country=${this.state.currentCountryCode}&category=${this.state.category}&apiKey=${API_KEY}&page=${this.state.page}&pageSize=${this.state.pageSize}`).then(data => {
             if(data.data.status === 'ok') {
                 this.setActiveLoader(false)
                 this.setState({
@@ -87,48 +107,84 @@ export default class NewsComponent extends Component {
         })
     }
 
-    setFilterCountry = (country) => {
+    setCountry = (countryCode, country) => {
         this.setState({
-            currentCountry: country,
-            articles: []
-        }, () => {
-            this.getNews();
+            currentCountryCode: countryCode,
+            currentCountry: country
         })
     }
 
-    setFilterCategory = (category) => {
+    setCategory = (categoryCode, category) => {
         this.setState({
-            category,
-            articles: []
+            category: categoryCode,
+            currentCategry: category
+        })
+    }
+
+    setFilterCountry = (country) => {
+        switch(country) {
+            case 'Ukraine':
+                this.setCountry('ua', 'Ukraine')
+                break
+          
+            case 'USA':
+                this.setCountry('us', 'USA')
+                break
+            case 'Great Britain':
+                this.setCountry('gb', 'Great Britain')
+                break
+            case 'Russia':
+                this.setCountry('ru', 'Russia')
+                break
+          
+            default:
+              break
+          }
+    }
+
+    setFilterCategory = (category) => {
+        switch(category) {
+            case 'General':
+                this.setCategory('general', 'General')
+                break
+            case 'Business':
+                this.setCategory('business', 'Business')
+                break
+            case 'Science':
+                this.setCategory('science', 'Science')
+                break
+            case 'Sports':
+                this.setCategory('sports', 'Sports')
+                break
+            case 'Technology':
+                this.setCategory('technology', 'Technology')
+                break
+          
+            default:
+              break
+          }
+    }
+
+    openDialog = (isOpenModal) => {
+        this.setState({
+            isOpenModal
+        })
+        
+    }
+
+    onSearch = () => {
+        this.setState({
+            articles: [],
+            page: 1,
+            pageSize: 10,
+            isOpenModal: false
         }, () => {
-            this.getNews();
+            this.getNews()
         })
     }
 
     render() {
-        let pickerCountry =  <Picker
-                                selectedValue={this.state.currentCountry}
-                                style={styles.pickerStyle}
-                                onValueChange={(itemValue) => this.setFilterCountry(itemValue)}>
-                                <Picker.Item label="UA" value="ua" />
-                                <Picker.Item label="USA" value="us" />
-                                <Picker.Item label="GB" value="gb" />
-                                <Picker.Item label="RU" value="ru" />
-                            </Picker> 
-                            
 
-        let pickerCategory = <Picker
-                                enabled={false}
-                                selectedValue={this.state.category}
-                                style={styles.pickerStyleCategory}
-                                onValueChange={(itemValue) => this.setFilterCategory(itemValue)}>
-                                <Picker.Item label="General" value="general" />
-                                <Picker.Item label="Business" value="business" />
-                                <Picker.Item label="Science" value="science" />
-                                <Picker.Item label="Sports" value="sports" />
-                                <Picker.Item label="Technology" value="technology" />
-                            </Picker>
-                            
         return (
             <View style={styles.newsWrapper} >
                 <Loader 
@@ -138,6 +194,34 @@ export default class NewsComponent extends Component {
                     visible={this.state.isVisibleTost}
                     message={this.state.textToast}
                 />
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={this.state.isOpenModal}
+                >
+                    <View style={styles.modalWrap}>
+                        <TouchableHighlight
+                            style={styles.closeModal}
+                            onPress={() => {
+                            this.onSearch();
+                            }}>
+                                <Icon name='close' style={styles.close}/>
+                        </TouchableHighlight>
+                        <View>
+                            <SelectionItem data={DATA_COUNTRIES} onSelectItem={(data)=>this.setFilterCountry(data)}/>
+                            <View><Text style={styles.selectItemModal}>{this.state.currentCountry}</Text></View>  
+                            <SelectionItem data={DATA_CATEGORIES} onSelectItem={(data)=>this.setFilterCategory(data)}/>
+                            <View><Text style={styles.selectItemModal}>{this.state.currentCategry}</Text></View>
+                            <TouchableWithoutFeedback onPress={() => {this.onSearch()}}>
+                                <View style={styles.sarchModalIcon}>
+                                    <View>
+                                        <Icon style={styles.selectItemSearch} name='search' />
+                                    </View>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </View>
+                    </View>
+                </Modal>
                 <View style={styles.flatWrap}>
                     <FlatList
                         data={this.state.articles}
@@ -158,8 +242,17 @@ export default class NewsComponent extends Component {
                 </View>
                 <View style={styles.bottomWrap}>
                     <View style={styles.pickersWrap}>
-                        {pickerCountry}
-                        {pickerCategory}
+                        <TouchableWithoutFeedback onPress={() => { this.openDialog(true) }}>
+                            <View style={styles.searchBottomWrap}>
+                                <Icon style={styles.selectItem} name='search' />
+                            </View>
+                        </TouchableWithoutFeedback>
+                        <View style={styles.selectItemWrap}>
+                            <Text style={styles.selectItem}>{this.state.currentCountry}</Text>
+                        </View>
+                        <View style={styles.selectItemWrap}>
+                            <Text style={styles.selectItem}>{this.state.currentCategry}</Text>
+                        </View>
                     </View>
                     <View>
                          <View>
@@ -212,6 +305,7 @@ const styles = StyleSheet.create({
         width: 35
     },
     modalWrap: {
+        paddingTop: 35,
         position: 'relative',
         backgroundColor: 'rgba(0, 0, 0, 0.92)',
         height: '100%'
@@ -235,6 +329,46 @@ const styles = StyleSheet.create({
     },
     pickersWrap: {
         display: 'flex',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    selectItem: {
+        color: '#fff',
+        
+    },
+    selectItemWrap: {
+        // backgroundColor: 'grey',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 5,
+        marginLeft: 5
+    },
+    close: {
+        color: '#fff',
+    },
+    closeModal: {
+        position: 'absolute',
+        top: 10,
+        right: 20,
+    },
+    selectItemModal: {
+        marginLeft: 20,
+        fontSize: 20,
+        color: '#fff'
+    },
+    sarchModalIcon: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'flex-end'
+    },
+    selectItemSearch: {
+        color: '#fff',
+        fontSize: 28,
+        marginRight: 15
+    },
+    searchBottomWrap: {
+        marginRight: 10
     }
 })

@@ -17,9 +17,9 @@ export default class App extends Component {
         return ( 
            <NativeRouter>
                <MenuComponent/>
-                <Route exact path="/" component={NoteComponent} />
+                <Route exact path="/" component={NewsComponent} />
                 <Route path="/todo" component={TodoComponent} />
-                <Route path="/news" component={NewsComponent} />
+                <Route path="/notes" component={NoteComponent} />
            </NativeRouter>
         );
     }

@@ -14,7 +14,7 @@ export class Loader extends React.Component {
 
     render() {
         return (
-            <View style={styles.loaderContainer}>
+            <View style={this.props.inFlatArticle ? styles.loaderContainerInFlat : styles.loaderContainer}>
                 <ActivityIndicator style={this.props.isActiveLoader ? null : styles.loaderNotActive} size={this.props.size ? this.props.size : 'large'} color={this.props.color ? this.props.color : '#000'} /> 
             </View>
         )
@@ -27,6 +27,9 @@ const styles = StyleSheet.create({
         right: 15,
         top: 10,
         zIndex: 1
+    },
+    loaderContainerInFlat: {
+        marginBottom: 0
     },
     loaderNotActive: {
         display: 'none',

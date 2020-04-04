@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, FlatList, Linking, Picker, TouchableWithoutFeedback, Modal, TouchableHighlight, SectionList, SafeAreaView } from 'react-native';
-import NetInfo from "@react-native-community/netinfo";
-import { useNetInfo } from "@react-native-community/netinfo";
+import { StyleSheet, Text, View, FlatList, Linking, TouchableWithoutFeedback, Modal, TouchableHighlight, SectionList, SafeAreaView } from 'react-native';
+
 import autoBind from 'react-autobind';
 import { Icon } from 'native-base';
 import { API_KEY } from 'react-native-dotenv';
@@ -41,23 +40,20 @@ export default class NewsComponent extends Component {
             currentCountry: 'Ukraine',
             isModalVisible: false,
             category: 'general',
-            currentCategry: 'General',
+            currentCategory: 'General',
             setRefreshing: false,
-            isOpenModal: false
+            isOpenModal: false,
+            categoryInModal: '',
+            countryInModal: '',
+            categoryCodeInModal: '',
+            countryCodeInModal: ''
         };
         autoBind(this);
     }
 
     componentDidMount() {
-        // this.getNetInfo()
         this.getNews()
     }
-
-    // getNetInfo = () => {
-    //     NetInfo.fetch().then(data => {
-    //         console.log("Connection type", data);
-    //       });
-    // }
 
     setActiveLoader = (isLoad) => {
         this.setState({
@@ -78,23 +74,34 @@ export default class NewsComponent extends Component {
     }
 
     getNews = () => {
-        this.setActiveLoader(true)
-        const { page, articles } = this.state;
-        send.send('GET', `top-headlines?country=${this.state.currentCountryCode}&category=${this.state.category}&apiKey=${API_KEY}&page=${this.state.page}&pageSize=${this.state.pageSize}`).then(data => {
-            if(data.data.status === 'ok') {
-                this.setActiveLoader(false)
-                this.setState({
-                    articles: articles.concat(data.data.articles),
-                    page: page + 1
-                })
-            } else {
-                this.setActiveLoader(false);
-                this.setActiveToast(true, 'something went wrong :(');
+        try {
+            if(this.state.articles.length == 0) {
+                this.setActiveLoader(true)
             }
-        }).catch(error => {
-            this.setActiveLoader(false);
+            const { page } = this.state;
+            send.send('GET', `top-headlines?country=${this.state.currentCountryCode}&category=${this.state.category}&apiKey=${API_KEY}&page=${this.state.page}&pageSize=${this.state.pageSize}`).then(data => {
+                if(data.data.status === 'ok') {
+                    this.setActiveLoader(false)
+                    let tempArticle = this.state.articles.filter(item => !item.isLoader)
+                    let readyArticle = tempArticle.concat(data.data.articles)
+                    if(readyArticle.length < data.data.totalResults) {
+                        readyArticle.push({"isLoader": true})
+                    }
+                    this.setState({
+                        articles: readyArticle,
+                        page: page + 1
+                    })
+                } else {
+                    this.setActiveLoader(false);
+                    this.setActiveToast(true, 'something went wrong :(');
+                }
+            }).catch(error => {
+                this.setActiveLoader(false);
+                this.setActiveToast(true, error);
+            })
+        } catch (error) {
             this.setActiveToast(true, error);
-        })
+        }
     }
 
     fetchResult = () => {
@@ -109,15 +116,15 @@ export default class NewsComponent extends Component {
 
     setCountry = (countryCode, country) => {
         this.setState({
-            currentCountryCode: countryCode,
-            currentCountry: country
+            countryCodeInModal: countryCode,
+            countryInModal: country
         })
     }
 
     setCategory = (categoryCode, category) => {
         this.setState({
-            category: categoryCode,
-            currentCategry: category
+            categoryCodeInModal: categoryCode,
+            categoryInModal: category
         })
     }
 
@@ -167,6 +174,10 @@ export default class NewsComponent extends Component {
 
     openDialog = (isOpenModal) => {
         this.setState({
+            categoryInModal: this.state.currentCategory,
+            countryInModal: this.state.currentCountry,
+            categoryCodeInModal: this.state.category,
+            countryCodeInModal: this.state.currentCountryCode,
             isOpenModal
         })
         
@@ -177,6 +188,10 @@ export default class NewsComponent extends Component {
             articles: [],
             page: 1,
             pageSize: 10,
+            currentCountryCode: this.state.countryCodeInModal,
+            currentCountry: this.state.countryInModal,
+            category: this.state.categoryCodeInModal,
+            currentCategory: this.state.categoryInModal,
             isOpenModal: false
         }, () => {
             this.getNews()
@@ -203,15 +218,15 @@ export default class NewsComponent extends Component {
                         <TouchableHighlight
                             style={styles.closeModal}
                             onPress={() => {
-                            this.onSearch();
+                            this.openDialog(false);
                             }}>
                                 <Icon name='close' style={styles.close}/>
                         </TouchableHighlight>
                         <View>
                             <SelectionItem data={DATA_COUNTRIES} onSelectItem={(data)=>this.setFilterCountry(data)}/>
-                            <View><Text style={styles.selectItemModal}>{this.state.currentCountry}</Text></View>  
+                            <View><Text style={styles.selectItemModal}>{this.state.countryInModal}</Text></View>
                             <SelectionItem data={DATA_CATEGORIES} onSelectItem={(data)=>this.setFilterCategory(data)}/>
-                            <View><Text style={styles.selectItemModal}>{this.state.currentCategry}</Text></View>
+                            <View><Text style={styles.selectItemModal}>{this.state.categoryInModal}</Text></View>
                             <TouchableWithoutFeedback onPress={() => {this.onSearch()}}>
                                 <View style={styles.sarchModalIcon}>
                                     <View>
@@ -229,13 +244,14 @@ export default class NewsComponent extends Component {
                         onEndReached={this.fetchResult}
                         onEndReachedThreshold={0.7}
                         renderItem={( { item } ) => <NewsItemComponent 
-                                                        itemImage={item.urlToImage}
-                                                        source={item.source.name}
-                                                        title={item.title}
-                                                        author={item.author}
-                                                        description={item.description}
-                                                        link={item.url}
-                                                        publishTime={moment(item.publishedAt).fromNow()}
+                                                        itemImage={item.urlToImage ? item.urlToImage : null}
+                                                        source={item.source ? item.source.name : null}
+                                                        title={item.title ? item.title : null}
+                                                        author={item.author ? item.author : null}
+                                                        description={item.description ? item.description : null}
+                                                        link={item.url ? item.url : null}
+                                                        publishTime={item.publishedAt ? moment(item.publishedAt).fromNow() : null}
+                                                        isLoader={item.isLoader ? item.isLoader : null}
                                                     />}
                         keyExtractor={(item, index) => index.toString()}
                     />
@@ -251,7 +267,7 @@ export default class NewsComponent extends Component {
                             <Text style={styles.selectItem}>{this.state.currentCountry}</Text>
                         </View>
                         <View style={styles.selectItemWrap}>
-                            <Text style={styles.selectItem}>{this.state.currentCategry}</Text>
+                            <Text style={styles.selectItem}>{this.state.currentCategory}</Text>
                         </View>
                     </View>
                     <View>
@@ -334,10 +350,9 @@ const styles = StyleSheet.create({
     },
     selectItem: {
         color: '#fff',
-        
+        fontWeight: 'bold'
     },
     selectItemWrap: {
-        // backgroundColor: 'grey',
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
@@ -354,7 +369,7 @@ const styles = StyleSheet.create({
         right: 20,
     },
     selectItemModal: {
-        marginLeft: 20,
+        marginLeft: 25,
         fontSize: 20,
         color: '#fff'
     },

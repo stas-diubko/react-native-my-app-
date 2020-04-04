@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   StyleSheet,
   Text,
@@ -20,13 +20,13 @@ const SelectionItem = (props) => {
     return (
          <SafeAreaView style={styles.container}>
             <SectionList
-            sections={props.data}
-            keyExtractor={(item, index) => item + index}
-            renderItem={({ item }) => <Item title={item} onSelect={(data) => {props.onSelectItem(data)}} />
-            }
-            renderSectionHeader={({ section: { title } }) => (
-                <Text style={styles.header}>{title}</Text>
-            )}
+              sections={props.data}
+              keyExtractor={(item, index) => item + index}
+              renderItem={({ item }) => <Item title={item} onSelect={(data) => {props.onSelectItem(data)}} />
+              }
+              renderSectionHeader={({ section: { title } }) => (
+                  <Text style={styles.header}>{title}</Text>
+              )}
             />
         </SafeAreaView>
     )
@@ -36,24 +36,26 @@ export default SelectionItem;
 
 const styles = StyleSheet.create({
   container: {
-    // marginTop: 30,
     padding: 10,
-    
   },
   item: {
     fontSize: 20,
     backgroundColor: '#fff',
     marginBottom: 2,
     padding: 3,
-    borderRadius: 5
+    borderRadius: 5,
+    paddingLeft: 15,
+    paddingRight: 15
   },
   header: {
     fontSize: 20,
-    backgroundColor: 'grey',
+    backgroundColor: 'lightgrey',
     marginBottom: 5,
     padding: 3,
-    color: '#fff',
-    borderRadius: 5
+    color: 'grey',
+    borderRadius: 5,
+    paddingLeft: 15,
+    paddingRight: 15
   },
   title: {
     fontSize: 20

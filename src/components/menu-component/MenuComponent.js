@@ -15,20 +15,20 @@ class MenuComponent extends Component {
     render() {
         return (
             <View style={styles.menuWrapper}>
-                <Link
+                 <Link
                     to="/"
                 >
-                    <Text style={ this.props.location.pathname == '/' ? styles.underLineMenuButton : styles.menuItems}>Notes</Text>
+                    <Text style={  this.props.location.pathname == '/' ? styles.underLineMenuButton : styles.menuItems}>News</Text>
+                </Link>
+                <Link
+                    to="/notes"
+                >
+                    <Text style={ this.props.location.pathname == '/notes' ? styles.underLineMenuButton : styles.menuItems}>Notes</Text>
                 </Link>
                 <Link
                     to="/todo"
                 >
                     <Text style={  this.props.location.pathname == '/todo' ? styles.underLineMenuButton : styles.menuItems}>Todos</Text>
-                </Link>
-                <Link
-                    to="/news"
-                >
-                    <Text style={  this.props.location.pathname == '/news' ? styles.underLineMenuButton : styles.menuItems}>News</Text>
                 </Link>
           </View>
         )
@@ -56,7 +56,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
         marginLeft: 15,
         marginBottom: 10,
-        // textDecorationLine: 'underline'
     }
 });
 

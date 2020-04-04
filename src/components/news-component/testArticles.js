@@ -63,6 +63,9 @@ const articles = [
         "urlToImage": "https://e0.365dm.com/20/03/1600x900/skysports-nolberto-solano-peru_4957000.jpg",
         "publishedAt": "2020-03-27T22:26:36Z",
         "content": "Former Premier League star Nolberto Solano has apologised after being detained by police for breaking a coronavirus curfew in Peru.\r\nThe South American nation has imposed a mandatory curfew between 8pm and 5am every day to combat the spread of the virus.\r\nSol… [+635 chars]"
+    },
+    {
+        "isLoader": true
     }
 ]
 

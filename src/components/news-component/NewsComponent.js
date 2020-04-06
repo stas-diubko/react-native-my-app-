@@ -11,6 +11,7 @@ import { Toaster } from '../../common/toaster';
 import moment from 'moment';
 import { articles } from './testArticles';
 import SelectionItem from './SelectionItem';
+import NetInfo from "@react-native-community/netinfo";
 
 const DATA_COUNTRIES = [
     {
@@ -22,7 +23,7 @@ const DATA_COUNTRIES = [
 const DATA_CATEGORIES = [
     {
       title: "Categories",
-      data: ["General", "Business", "Science", "Sports", "Technology"]
+      data: ["General", "Business", "Science", "Sports", "Technology", "Entertainment"]
     }
 ];
 
@@ -74,34 +75,37 @@ export default class NewsComponent extends Component {
     }
 
     getNews = () => {
-        try {
-            if(this.state.articles.length == 0) {
-                this.setActiveLoader(true)
-            }
-            const { page } = this.state;
-            send.send('GET', `top-headlines?country=${this.state.currentCountryCode}&category=${this.state.category}&apiKey=${API_KEY}&page=${this.state.page}&pageSize=${this.state.pageSize}`).then(data => {
-                if(data.data.status === 'ok') {
-                    this.setActiveLoader(false)
-                    let tempArticle = this.state.articles.filter(item => !item.isLoader)
-                    let readyArticle = tempArticle.concat(data.data.articles)
-                    if(readyArticle.length < data.data.totalResults) {
-                        readyArticle.push({"isLoader": true})
-                    }
-                    this.setState({
-                        articles: readyArticle,
-                        page: page + 1
-                    })
-                } else {
-                    this.setActiveLoader(false);
-                    this.setActiveToast(true, 'something went wrong :(');
+        NetInfo.fetch().then(state => {
+            if(state.isConnected) {
+                if(this.state.articles.length == 0) {
+                    this.setActiveLoader(true)
                 }
-            }).catch(error => {
-                this.setActiveLoader(false);
-                this.setActiveToast(true, error);
-            })
-        } catch (error) {
-            this.setActiveToast(true, error);
-        }
+                const { page } = this.state;
+                send.send('GET', `top-headlines?country=${this.state.currentCountryCode}&category=${this.state.category}&apiKey=${API_KEY}&page=${this.state.page}&pageSize=${this.state.pageSize}`).then(data => {
+                    if(data.data.status === 'ok') {
+                        this.setActiveLoader(false)
+                        let tempArticle = this.state.articles.filter(item => !item.isLoader)
+                        let readyArticle = tempArticle.concat(data.data.articles)
+                        if(readyArticle.length < data.data.totalResults) {
+                            readyArticle.push({"isLoader": true})
+                        }
+                        this.setState({
+                            articles: readyArticle,
+                            page: page + 1
+                        })
+                    } else {
+                        this.setActiveLoader(false);
+                        this.setActiveToast(true, 'something went wrong :(');
+                    }
+                }).catch(error => {
+                    this.setActiveLoader(false);
+                    this.setActiveToast(true, error);
+                })
+            } else {
+                return this.setActiveToast(true, 'Check internet connection');
+            }
+            
+        });
     }
 
     fetchResult = () => {
@@ -166,7 +170,9 @@ export default class NewsComponent extends Component {
             case 'Technology':
                 this.setCategory('technology', 'Technology')
                 break
-          
+            case 'Entertainment':
+                this.setCategory('entertainment', 'Entertainment')
+                break
             default:
               break
           }

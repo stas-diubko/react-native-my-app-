@@ -3,6 +3,8 @@ import { StyleSheet, Text, View, Image, Linking} from 'react-native';
 import autoBind from 'react-autobind';
 import { Icon } from 'native-base';
 import { Loader } from '../../common/loader';
+
+let statements = ['Think every moment', 'Always smile', 'Be in a good mood', 'Read more', 'Learn more', 'Change the globe']
 export default class NewsItemComponent extends Component {
     constructor(props) {
         super(props);
@@ -11,8 +13,12 @@ export default class NewsItemComponent extends Component {
         autoBind(this);
     }
 
+    getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+
     render() {
-        let stripe = this.props.author ? this.props.author.length > 30 ? null : ' | ' : null
+        let stripe = this.props.author && this.props.source ? this.props.source.length > 20 || this.props.author.length > 20 ? null : ' | ' : null
         
         let itemContent = this.props.isLoader ? 
             <View style={styles.loaderStyle}>
@@ -23,8 +29,8 @@ export default class NewsItemComponent extends Component {
             </View>
         :
         <View style={styles.newsItemWrapper} >
-                {this.props.itemImage ? <Image style={styles.imageStyles} source={{uri: this.props.itemImage}}/> : null}
-                <View style={this.props.author ? this.props.author.length > 30 ? styles.sourceAndAuthorStyleLong : styles.sourceAndAuthorStyle : styles.sourceAndAuthorStyle }>
+                {this.props.itemImage ? <Image style={styles.imageStyles} source={{uri: this.props.itemImage}}/> : <View style={styles.imgCover}><Text style={styles.coverText}>{statements[this.getRandomInt(statements.length)]}</Text></View>}
+                <View style={this.props.author ? this.props.author.length > 20 || this.props.source.length > 20 ? styles.sourceAndAuthorStyleLong : styles.sourceAndAuthorStyle : styles.sourceAndAuthorStyle }>
                     <View >
                         {this.props.source ? <Text style={styles.itemsLine}><Text style={styles.headLinesAuthor}>{this.props.source}</Text></Text> : null}
                     </View>
@@ -49,7 +55,7 @@ export default class NewsItemComponent extends Component {
 const styles = StyleSheet.create({
     newsItemWrapper: {
         backgroundColor: '#fff',
-        marginBottom: 25,
+        marginBottom: 20,
         borderRadius: 10
     },
     itemPreview: {
@@ -106,5 +112,19 @@ const styles = StyleSheet.create({
     loaderStyle: {
         marginBottom: 15,
         padding: 0
+    },
+    imgCover: {
+        width: '100%',
+        height: 200,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'lightgrey',
+        marginBottom: 10
+    },
+    coverText: {
+        color: '#fff',
+        fontSize: 30
     }
 })

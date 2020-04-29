@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, FlatList, Linking, TouchableWithoutFeedback, Modal, TouchableHighlight, SectionList, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Linking, TouchableWithoutFeedback, Modal, TouchableHighlight } from 'react-native';
 
 import autoBind from 'react-autobind';
 import { Icon } from 'native-base';
@@ -33,7 +33,8 @@ export default class NewsComponent extends Component {
         this.state = {
             page: 1,
             pageSize: 10,
-            articles: [],//articles
+            articles: [], //articles,
+            isFullList: false,
             isLoad: false,
             isVisibleTost: false,
             textToast: null,
@@ -47,7 +48,9 @@ export default class NewsComponent extends Component {
             categoryInModal: '',
             countryInModal: '',
             categoryCodeInModal: '',
-            countryCodeInModal: ''
+            countryCodeInModal: '',
+            currentAbbreviatedCountry: 'UA',
+            abbreviatedCountryInModal: ''
         };
         autoBind(this);
     }
@@ -80,6 +83,9 @@ export default class NewsComponent extends Component {
                 if(this.state.articles.length == 0) {
                     this.setActiveLoader(true)
                 }
+                if(this.state.isFullList){
+                    return;
+                }
                 const { page } = this.state;
                 send.send('GET', `top-headlines?country=${this.state.currentCountryCode}&category=${this.state.category}&apiKey=${API_KEY}&page=${this.state.page}&pageSize=${this.state.pageSize}`).then(data => {
                     if(data.data.status === 'ok') {
@@ -88,6 +94,10 @@ export default class NewsComponent extends Component {
                         let readyArticle = tempArticle.concat(data.data.articles)
                         if(readyArticle.length < data.data.totalResults) {
                             readyArticle.push({"isLoader": true})
+                        } else {
+                            this.setState({
+                                isFullList: true
+                            })
                         }
                         this.setState({
                             articles: readyArticle,
@@ -118,10 +128,11 @@ export default class NewsComponent extends Component {
         })
     }
 
-    setCountry = (countryCode, country) => {
+    setCountry = (countryCode, country, abbreviatedCountry ) => {
         this.setState({
             countryCodeInModal: countryCode,
-            countryInModal: country
+            countryInModal: country,
+            abbreviatedCountryInModal: abbreviatedCountry
         })
     }
 
@@ -135,17 +146,17 @@ export default class NewsComponent extends Component {
     setFilterCountry = (country) => {
         switch(country) {
             case 'Ukraine':
-                this.setCountry('ua', 'Ukraine')
+                this.setCountry('ua', 'Ukraine', 'UA')
                 break
           
             case 'USA':
-                this.setCountry('us', 'USA')
+                this.setCountry('us', 'USA', 'USA')
                 break
             case 'Great Britain':
-                this.setCountry('gb', 'Great Britain')
+                this.setCountry('gb', 'Great Britain', 'GB')
                 break
             case 'Russia':
-                this.setCountry('ru', 'Russia')
+                this.setCountry('ru', 'Russia', 'RU')
                 break
           
             default:
@@ -184,6 +195,7 @@ export default class NewsComponent extends Component {
             countryInModal: this.state.currentCountry,
             categoryCodeInModal: this.state.category,
             countryCodeInModal: this.state.currentCountryCode,
+            abbreviatedCountryInModal: this.state.currentAbbreviatedCountry,
             isOpenModal
         })
         
@@ -198,6 +210,7 @@ export default class NewsComponent extends Component {
             currentCountry: this.state.countryInModal,
             category: this.state.categoryCodeInModal,
             currentCategory: this.state.categoryInModal,
+            currentAbbreviatedCountry: this.state.abbreviatedCountryInModal,
             isOpenModal: false
         }, () => {
             this.getNews()
@@ -229,10 +242,8 @@ export default class NewsComponent extends Component {
                                 <Icon name='close' style={styles.close}/>
                         </TouchableHighlight>
                         <View>
-                            <SelectionItem data={DATA_COUNTRIES} onSelectItem={(data)=>this.setFilterCountry(data)}/>
-                            <View><Text style={styles.selectItemModal}>{this.state.countryInModal}</Text></View>
-                            <SelectionItem data={DATA_CATEGORIES} onSelectItem={(data)=>this.setFilterCategory(data)}/>
-                            <View><Text style={styles.selectItemModal}>{this.state.categoryInModal}</Text></View>
+                            <SelectionItem data={DATA_COUNTRIES} onSelectItem={(data)=>this.setFilterCountry(data)} selectedItemOnOpen={this.state.countryInModal}/>
+                            <SelectionItem data={DATA_CATEGORIES} onSelectItem={(data)=>this.setFilterCategory(data)} selectedItemOnOpen={this.state.categoryInModal}/>
                             <TouchableWithoutFeedback onPress={() => {this.onSearch()}}>
                                 <View style={styles.sarchModalIcon}>
                                     <View>
@@ -270,7 +281,7 @@ export default class NewsComponent extends Component {
                             </View>
                         </TouchableWithoutFeedback>
                         <View style={styles.selectItemWrap}>
-                            <Text style={styles.selectItem}>{this.state.currentCountry}</Text>
+                            <Text style={styles.selectItem}>{this.state.currentAbbreviatedCountry}</Text>
                         </View>
                         <View style={styles.selectItemWrap}>
                             <Text style={styles.selectItem}>{this.state.currentCategory}</Text>
@@ -294,8 +305,7 @@ const styles = StyleSheet.create({
     newsWrapper: {
         backgroundColor: '#f0f0f0',
         height: '100%',
-        paddingTop: 10,
-        paddingBottom: 42
+        position: 'relative'
     },
     searchIcon: {
         color: '#fff'
@@ -304,6 +314,8 @@ const styles = StyleSheet.create({
         marginLeft: 20
     },
     bottomWrap: {
+        position:'absolute',
+        bottom: 40,
         height: 40,
         width: '100%',
         display: 'flex',
@@ -319,7 +331,7 @@ const styles = StyleSheet.create({
         color: '#fff'
     },
     flatWrap: {
-        height: '93%'
+        height: '90%'
     },
     loaderSearchWrap: {
         marginLeft: 5,

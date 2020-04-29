@@ -21,7 +21,7 @@ const articles = [
         "title": "MARTIN SAMUEL: Coronavirus was unimaginable 12 months ago, but now the boom is bust. - Daily Mail",
         "description": "MARTIN SAMUEL - CHIEF SPORTS WRITER: It is not going to be the same again. Not just the next transfer window, not just next season, but for the next generation and beyond.",
         "url": "https://www.dailymail.co.uk/sport/football/article-8161907/MARTIN-SAMUEL-Coronavirus-unimaginable-12-months-ago-boom-bust.html",
-        "urlToImage": "https://i.dailymail.co.uk/1s/2020/03/27/23/26509966-0-image-a-3_1585350581290.jpg",
+        "urlToImage": null,//"https://i.dailymail.co.uk/1s/2020/03/27/23/26509966-0-image-a-3_1585350581290.jpg",
         "publishedAt": "2020-03-28T00:01:56Z",
         "content": "It is not going to be the same again. Not just the next transfer window, not just next season, but for the next generation and beyond.\r\nThe coronavirus crisis will change football, however temporary this abeyance may seem. It will change the market, it will c… [+5702 chars]"
     },
@@ -47,7 +47,7 @@ const articles = [
         "title": "Premier League season still on course to be completed despite 'void' suggestions - Mirror Online",
         "description": "It is likely that the current suspension of English football will next week be extended past the April 30 date that had previously been when it had been hoped action would return",
         "url": "https://www.mirror.co.uk/sport/football/news/premier-league-season-still-course-21769517",
-        "urlToImage": "https://i2-prod.mirror.co.uk/incoming/article21718753.ece/ALTERNATES/s1200/1_English-Premier-League-matches-suspended-London-United-Kingdom-11-Aug-2017.jpg",
+        "urlToImage": null,// "https://i2-prod.mirror.co.uk/incoming/article21718753.ece/ALTERNATES/s1200/1_English-Premier-League-matches-suspended-London-United-Kingdom-11-Aug-2017.jpg",
         "publishedAt": "2020-03-27T22:57:10Z",
         "content": "The Premier League season is still on course to be completed despite suggestions that some top flight chairman want it voided.\r\nThe majority of clubs are understood to be in favour of pressing ahead and the issue will be discussed further at a shareholders me… [+1719 chars]"
     },

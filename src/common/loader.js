@@ -23,9 +23,11 @@ export class Loader extends React.Component {
 
 const styles = StyleSheet.create({
     loaderContainer: {
-        position: 'absolute',
-        right: 15,
-        top: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        top: '10%',
         zIndex: 1
     },
     loaderContainerInFlat: {
